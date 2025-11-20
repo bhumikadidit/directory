@@ -1,4 +1,4 @@
-```markdown
+
 # District Data Cleaner
 
 A simple Python tool that fixes spelling mistakes in district names and merges CSV files automatically.
