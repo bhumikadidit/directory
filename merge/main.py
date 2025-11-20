@@ -3,7 +3,7 @@ import re
 from collections import Counter
 
 class CleanAndMerge:
-    def __init__(self, dict_file='../data/raw/correct_districts.txt'):
+    def __init__(self, dict_file='data/raw/correct_districts.txt'):
         """Initialize with a dictionary file for corrections."""
         try:
             with open(dict_file, 'r', encoding='utf-8') as f:
@@ -66,23 +66,15 @@ class CleanAndMerge:
 
 if __name__ == '__main__':
     
-    dict_file = '../data/raw/correct_districts.txt'
-    kpi1_path = '../data/raw/kpi_1.csv'
-    kpi2_path = '../data/raw/kpi_2.csv'
-    
-    cleaner = CleanAndMerge(dict_file)
+    dict_file = 'data/raw/correct_districts.txt'
+    kpi1_path = 'data/raw/kpi_1.csv'
+    kpi2_path = 'data/raw/kpi_2.csv'
 
-    with open(dict_file, 'r', encoding='utf-8') as f:
-        dict_text = f.read()
+    cleaner = CleanAndMerge(dict_file=dict_file)
+    df1_cleaned, df2_cleaned, merged_df = cleaner.process_files(kpi1_path, kpi2_path)
 
-    df1 = pd.read_csv(kpi1_path)
-    df2 = pd.read_csv(kpi2_path)
-
-    cleaner = CleanAndMerge(dict_text)
-    df1_cleaned, df2_cleaned, merged_df = cleaner.process_files(df1, df2)
-
-    df1_cleaned.to_csv('../data/temp/kpi_1_cleaned.csv', index=False)
-    df2_cleaned.to_csv('../data/temp/kpi_2_cleaned.csv', index=False)
-    merged_df.to_csv('../data/processed/merged_kpi.csv', index=False)
+    df1_cleaned.to_csv('data/temp/kpi_1_cleaned.csv', index=False)
+    df2_cleaned.to_csv('data/temp/kpi_2_cleaned.csv', index=False)
+    merged_df.to_csv('data/processed/merged_kpi.csv', index=False)
 
     print("Data cleaning and merging completed.")

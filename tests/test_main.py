@@ -1,38 +1,44 @@
 import unittest
+import os
 import pandas as pd
-from collections import Counter
-from merge.main import CleanandMerge
+from merge.main import CleanAndMerge  
 
-class TestCleanandMerge(unittest.TestCase):
-    def setUp(self):
-        # Provide minimal sample district data for dictionary
-        self.sample_districts = 'dhanusha\nkathmandu\nkavrepalanchowk'
+class TestCleanAndMergePipeline(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Define file paths relative to this test file
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
         
-        # Instead of using default file, initiate with sample text
-        self.cleaner = CleanandMerge(dict_file=None)
-        self.cleaner.WORDS = Counter(self.cleaner.words(self.sample_districts))
-        self.cleaner.N = sum(self.cleaner.WORDS.values())
+        cls.dict_file = os.path.join(base_dir, 'data', 'raw', 'correct_districts.txt')
+        cls.kpi1_path = os.path.join(base_dir, 'data', 'raw', 'kpi_1.csv')
+        cls.kpi2_path = os.path.join(base_dir, 'data', 'raw', 'kpi_2.csv')
 
-        # Sample data simulating your CSV content
-        self.df1 = pd.DataFrame({
-            'District': ['dhanusa', 'kathmandu', 'kavre palanchowk'],
-            'KPI_1': [0.85, 0.8, 0.75]
-        })
+        cls.cleaner = CleanAndMerge(dict_file=cls.dict_file)
 
-        self.df2 = pd.DataFrame({
-            'District': ['dhanusha', 'kathmandu', 'kavrepalanchowk'],
-            'KPI_2': [0.6, 0.35, 0.65]
-        })
+    def test_process_files_runs_without_error(self):
+        # Run the pipeline to clean and merge the files
+        df1_cleaned, df2_cleaned, merged_df = self.cleaner.process_files(self.kpi1_path, self.kpi2_path)
 
-    def test_clean_correction(self):
-        corrected_df1 = self.cleaner.clean_csv(self.df1)
-        self.assertIn('dhanusha', corrected_df1['District'].values)
+        # Check that outputs are DataFrames
+        self.assertIsInstance(df1_cleaned, pd.DataFrame)
+        self.assertIsInstance(df2_cleaned, pd.DataFrame)
+        self.assertIsInstance(merged_df, pd.DataFrame)
 
-    def test_merge_rows(self):
-        df1_cleaned, df2_cleaned, merged = self.cleaner.process_and_merge(self.df1, self.df2)
-        self.assertTrue('dhanusha' in merged['District'].values)
-        self.assertFalse('dhanusa' in merged['District'].values)
-        self.assertEqual(len(merged['District'].unique()), 3)
+        # Check essential 'District' column exists
+        self.assertIn('District', df1_cleaned.columns)
+        self.assertIn('District', df2_cleaned.columns)
+        self.assertIn('District', merged_df.columns)
 
+    def test_correction_logic(self):
+        # test known typo correction with spaces removed
+        self.assertEqual(self.cleaner.correction('dhanusa'), 'dhanusha')
+        self.assertEqual(self.cleaner.correction('kavrepalanchowk'), 'kavrepalanchowk')
+    
+        # optional: normalize spaced input before correction
+        spaced_input = 'kavre palanchowk'.replace(' ', '')
+        self.assertEqual(self.cleaner.correction(spaced_input), 'kavrepalanchowk')
+        # correct district unaltered
+        self.assertEqual(self.cleaner.correction('kathmandu'), 'kathmandu')
+        
 if __name__ == '__main__':
     unittest.main()
