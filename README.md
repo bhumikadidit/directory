@@ -57,5 +57,4 @@ data/
 └── processed/     # Final merged data (auto-generated)
 ```
 
-Perfect for cleaning messy district data before analysis!
-```
+
