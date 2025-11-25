@@ -32,11 +32,11 @@ class TestCleanAndMergePipeline(unittest.TestCase):
     def test_correction_logic(self):
         # test known typo correction with spaces removed
         self.assertEqual(self.cleaner.correction('dhanusa'), 'dhanusha')
-        self.assertEqual(self.cleaner.correction('kavrepalanchowk'), 'kavrepalanchowk')
-    
-        # optional: normalize spaced input before correction
+        
+        # test input with spaces
         spaced_input = 'kavre palanchowk'.replace(' ', '')
         self.assertEqual(self.cleaner.correction(spaced_input), 'kavrepalanchowk')
+        
         # correct district unaltered
         self.assertEqual(self.cleaner.correction('kathmandu'), 'kathmandu')
         
